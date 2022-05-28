@@ -13,14 +13,14 @@ package com.pelewkurzony.observable_collection
 class ObservableMutableList<T> (
     override val size: Int,
     initialize: (index: Int) -> T
-) : MutableCollection<T> {
+) : MutableList<T> {
 
-    private var elements = MutableList<Any?> (size) { null }
+    private var _elements = MutableList<Any?> (size) { null }
 
-    private var onChange: ((MutableList<Any?>, T, T) -> Unit)? = null
-    private var onAdd: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
-    private var onRemove: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
-    private var onClear: ((MutableList<Any?>) -> Unit)? = null
+    private var _onChange: ((MutableList<Any?>, T, T) -> Unit)? = null
+    private var _onAdd: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
+    private var _onRemove: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
+    private var _onClear: ((MutableList<Any?>) -> Unit)? = null
 
     /**
      * Initializes the list with the given [size] and [initialize] function.
@@ -30,7 +30,7 @@ class ObservableMutableList<T> (
      */
     init {
         for (i in 0 until size) {
-            elements[i] = initialize(i)
+            _elements[i] = initialize(i)
         }
     }
 
@@ -38,20 +38,28 @@ class ObservableMutableList<T> (
      * Returns the element at the specified [index] in the list.
      * @throws IndexOutOfBoundsException if the specified [index] is out of bounds of this list.
      */
-    operator fun get(index: Int): T {
-        return elements[index] as T
+    override operator fun get(index: Int): T {
+        return _elements[index] as T
+    }
+
+    /**
+     * Returns first index of element, or -1 if the list does not contain element.
+     */
+    override fun indexOf(element: T): Int {
+        return _elements.indexOf(element)
     }
 
     /**
      * Replaces the element at the specified position in this list with the specified element.
      * @throws IndexOutOfBoundsException if the specified [index] is out of bounds of this list.
      */
-    operator fun set(index: Int, newValue: T) {
-        val oldValue = elements[index]
-        elements[index] = newValue
+    override operator fun set(index: Int, newValue: T): T {
+        val oldValue = _elements[index]
+        _elements[index] = newValue
         if (oldValue != newValue) {
-                this.onChange?.invoke(elements, oldValue as T, newValue)
+                this._onChange?.invoke(_elements, oldValue as T, newValue)
         }
+        return oldValue as T
     }
 
     /**
@@ -59,56 +67,56 @@ class ObservableMutableList<T> (
      * @param onChange the onChange listener function.
      */
     fun addOnChangeListener(onChange: (MutableList<Any?>, T, T) -> Unit) {
-        this.onChange = onChange
+        this._onChange = onChange
     }
 
     /**
      * Removes the onChange listener function.
      */
     fun removeOnChangeListener() {
-        this.onChange = null
+        this._onChange = null
     }
 
     /**
      * Sets the onAdd listener function.
      */
     fun addOnAddListener(onAdd: (MutableList<Any?>, Collection<T>) -> Unit) {
-        this.onAdd = onAdd
+        this._onAdd = onAdd
     }
 
     /**
      * Removes the onAdd listener function.
      */
     fun removeOnAddListener() {
-        this.onAdd = null
+        this._onAdd = null
     }
 
     /**
      * Sets the onRemove listener function.
      */
     fun addOnRemoveListener(onRemove: (MutableList<Any?>, Collection<T?>) -> Unit) {
-        this.onRemove = onRemove
+        this._onRemove = onRemove
     }
 
     /**
      * Removes the onRemove listener function.
      */
     fun removeOnRemoveListener() {
-        this.onRemove = null
+        this._onRemove = null
     }
 
     /**
      * Sets the onClear listener function.
      */
     fun addOnClearListener(onClear: (MutableList<Any?>) -> Unit) {
-        this.onClear = onClear
+        this._onClear = onClear
     }
 
     /**
      * Removes the onClear listener function.
      */
     fun removeOnClearListener() {
-        this.onClear = null
+        this._onClear = null
     }
 
     /**
@@ -118,9 +126,18 @@ class ObservableMutableList<T> (
      */
     override fun add(element: T): Boolean {
         // Checks if not null
-        onAdd?.invoke(this.elements, listOf(element))
-        return this.elements.add(element)
+        _onAdd?.invoke(_elements, listOf(element))
+        return _elements.add(element)
     }
+
+    /**
+     * Inserts an element into the list at the specified index.
+     */
+    override fun add(index: Int, element: T) {
+        _onAdd?.invoke(_elements, listOf(element))
+        _elements.add(index, element)
+    }
+
 
     /**
      * Adds the specified elements to the end of this list.
@@ -128,7 +145,7 @@ class ObservableMutableList<T> (
      */
     override fun addAll(elements: Collection<T>): Boolean {
         // Checks if not null
-        onAdd?.invoke(this.elements, elements)
+        _onAdd?.invoke(_elements, elements)
         elements.forEach {
             this.add(it)
         }
@@ -136,38 +153,83 @@ class ObservableMutableList<T> (
     }
 
     /**
+     * Inserts the specified elements at the specified [index] in the list.
+     * @return true if the list was changed as the result of the operation.
+     */
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        return _elements.addAll(index, elements)
+    }
+
+    /**
      * Removes all elements from this list.
      */
     override fun clear() {
-        this.elements.clear()
+        _elements.clear()
     }
 
     /**
      * Returns true if list has any element.
      */
     override fun isEmpty(): Boolean {
-        return this.elements.isEmpty()
+        return _elements.isEmpty()
     }
 
     /**
      * Returns true if this list contains the specified elements.
      */
     override fun containsAll(elements: Collection<T>): Boolean {
-        return this.elements.containsAll(elements)
+        return _elements.containsAll(elements)
     }
 
     /**
      * Returns true if this list contains the specified element.
      */
     override fun contains(element: T): Boolean {
-        return this.elements.contains(element)
+        return _elements.contains(element)
     }
 
     /**
      * Returns a list iterator over the elements in this list (in proper sequence).
      */
     override fun iterator(): MutableIterator<T> {
-        return elements.iterator() as MutableIterator<T>
+        return _elements.iterator() as MutableIterator<T>
+    }
+
+    /**
+     * Returns a list iterator over the elements in this list (in proper sequence).
+     */
+    override fun listIterator(): MutableListIterator<T> {
+        return _elements.listIterator() as MutableListIterator<T>
+    }
+
+    /**
+     * Returns a list iterator over the elements in this list (in proper sequence), starting at the specified index.
+     */
+    override fun listIterator(index: Int): MutableListIterator<T> {
+        return _elements.listIterator(index) as MutableListIterator<T>
+    }
+
+    /**
+     * Removes an element at the specified index from the list.
+     * @return the element that has been removed.
+     */
+    override fun removeAt(index: Int): T {
+        return _elements.removeAt(index) as T
+    }
+
+    /**
+     * Returns a view of the portion of this list between the specified fromIndex (inclusive) and toIndex (exclusive). The returned list is backed by this list, so non-structural changes in the returned list are reflected in this list, and vice-versa.
+     * @throws IndexOutOfBoundsException if [fromIndex] is out of range of this list.
+     */
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> {
+        return _elements.subList(fromIndex, toIndex) as MutableList<T>
+    }
+
+    /**
+     * Returns last index of element, or -1 if the collection does not contain element.
+     */
+    override fun lastIndexOf(element: T): Int {
+        return _elements.lastIndexOf(element)
     }
 
     /**
@@ -175,9 +237,9 @@ class ObservableMutableList<T> (
      * @return true if any element was removed from the collection, false if the collection was not modified.
      */
     override fun retainAll(elements: Collection<T>): Boolean {
-        val removed = this.elements.filter { !elements.contains(it) }
-        this.onRemove?.invoke(this.elements, removed as Collection<T>)
-        return this.elements.retainAll(elements)
+        val removed = _elements.filter { !elements.contains(it) }
+        this._onRemove?.invoke(_elements, removed as Collection<T>)
+        return _elements.retainAll(elements)
     }
 
     /**
@@ -185,8 +247,8 @@ class ObservableMutableList<T> (
      * @return true if any of the specified elements was removed from the collection, false if the collection was not modified.
      */
     override fun removeAll(elements: Collection<T>): Boolean {
-        this.onRemove?.invoke(this.elements, elements)
-        return this.elements.removeAll(elements)
+        this._onRemove?.invoke(_elements, elements)
+        return _elements.removeAll(elements)
     }
 
     /**
@@ -194,8 +256,8 @@ class ObservableMutableList<T> (
      * @return true if the element has been successfully removed; false if it was not present in the collection.
      */
     override fun remove(element: T): Boolean {
-        this.onRemove?.invoke(this.elements, listOf(element))
-        return this.elements.remove(element)
+        this._onRemove?.invoke(_elements, listOf(element))
+        return _elements.remove(element)
     }
 
 
