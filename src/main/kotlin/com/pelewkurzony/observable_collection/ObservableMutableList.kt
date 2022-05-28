@@ -1,4 +1,4 @@
-package com.pelewkurzony
+package com.pelewkurzony.observable_collection
 // package kotlin.collections
 // https://github.com/JetBrains/kotlin/blob/master/libraries/stdlib/src/kotlin/collections/AbstractList.kt
 
@@ -16,9 +16,10 @@ class ObservableMutableList<T> (
 ) : MutableCollection<T> {
 
     private var elements = MutableList<Any?> (size) { null }
+
     private var onChange: ((MutableList<Any?>, T, T) -> Unit)? = null
     private var onAdd: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
-    private var onRemove: ((MutableList<Any?>, Collection<T?>) -> Unit)? = null
+    private var onRemove: ((MutableList<Any?>, Collection<T>) -> Unit)? = null
     private var onClear: ((MutableList<Any?>) -> Unit)? = null
 
     /**
@@ -175,7 +176,7 @@ class ObservableMutableList<T> (
      */
     override fun retainAll(elements: Collection<T>): Boolean {
         val removed = this.elements.filter { !elements.contains(it) }
-        this.onRemove?.invoke(this.elements, removed as Collection<T?>)
+        this.onRemove?.invoke(this.elements, removed as Collection<T>)
         return this.elements.retainAll(elements)
     }
 
