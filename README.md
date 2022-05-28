@@ -2,7 +2,7 @@
 
 ## ObservableMutableList
 
-### packgage: **com.pelewkurzony.observable_collection.ObservableMutableList**
+### `packgage com.pelewkurzony.observable_collection.ObservableMutableList`
 
 ### It provides listeners for MutableList&#60;T&#62;
 - onChange `(MutableList<Any?>, T, T) -> Unit)`
