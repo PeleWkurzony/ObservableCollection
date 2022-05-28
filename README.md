@@ -2,13 +2,15 @@
 
 ## ObservableMutableList
 
-### It's provide listener for MutableList&#60;T&#62;
+### packgage: **com.pelewkurzony.observable_collection.ObservableMutableList**
+
+### It provides listeners for MutableList&#60;T&#62;
 - onChange `(MutableList<Any?>, T, T) -> Unit)`
 - onAdd `(MutableList<Any?>, Collection<T>) -> Unit`
 - onRemove `(MutableList<Any?>, Collection<T>) -> Unit`
 - onClear `(MutableList<Any?>) -> Unit`
 
-### It's provide function to change listeners in MutableList &#60;T&#62;
+### It provides functions to change listeners in MutableList &#60;T&#62;
 
 1. **OnChange**
 - `fun addOnChangeListener(onChange: (MutableList<Any?>, T, T) -> Unit) { ... }`
